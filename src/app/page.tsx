@@ -5,13 +5,14 @@ import Image from "next/image";
 import dynamic from 'next/dynamic';
 import 'leaflet/dist/leaflet.css';
 
+
 // Dynamically import all client-side components
-const MapComponent = dynamic(() => import('@/app/components/MapComponent'), { 
+const MapComponent = dynamic(() => import('./components/MapComponent'), { 
   ssr: false,
   loading: () => <div className="h-full w-full bg-gray-800 flex items-center justify-center">Loading map...</div>
 });
 
-const PanoramaViewer = dynamic(() => import('@/app/components/PanoramaViewer'), { 
+const PanoramaViewer = dynamic(() => import('./components/PanoramaViewer'), { 
   ssr: false,
   loading: () => <div className="h-full w-full bg-gray-800 flex items-center justify-center">Loading panorama...</div>
 });
