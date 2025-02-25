@@ -30,7 +30,7 @@ export default function MapComponent({
   const [prevFullscreen, setPrevFullscreen] = useState(fullscreen);
   const [initialLoad, setInitialLoad] = useState(true);
   
-  // Initialize map on mount
+  // Initialize map on mount with higher max zoom
   useEffect(() => {
     // Set up click handler
     mapService.setClickHandler(onMapClick);

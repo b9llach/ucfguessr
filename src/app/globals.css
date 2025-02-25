@@ -39,3 +39,106 @@ body {
 }
 
 @import 'https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css';
+
+/* Mobile-specific panorama viewer tweaks */
+@media (max-width: 768px) {
+  .pnlm-container {
+    touch-action: none;
+  }
+  
+  .pnlm-dragfix, 
+  .pnlm-preview-img,
+  .pnlm-render-container {
+    touch-action: none;
+  }
+  
+  /* Make drag controls larger and more touch-friendly */
+  .pnlm-dragfix span {
+    transform: scale(1.5);
+  }
+}
+
+/* Fix for mobile viewport height issues */
+@supports (-webkit-touch-callout: none) {
+  .h-screen {
+    height: -webkit-fill-available;
+  }
+}
+
+/* Mobile landscape specific adjustments */
+@media (max-width: 768px) and (orientation: landscape) {
+  /* Adjust overall layout */
+  .h-screen {
+    height: 100vh;
+  }
+  
+  /* Make header more compact */
+  header {
+    padding-top: 0.25rem !important;
+    padding-bottom: 0.25rem !important;
+  }
+  
+  /* Force map to fit in viewport */
+  .leaflet-container {
+    max-height: 140px !important;
+  }
+  
+  /* Adjust panorama controls to stay in view */
+  .pnlm-controls-container {
+    bottom: 5px !important;
+  }
+  
+  /* Make panorama controls more compact */
+  .pnlm-dragfix {
+    transform: scale(0.8);
+    transform-origin: bottom right;
+  }
+  
+  /* Adjust the results overlay to be smaller */
+  .bg-black\/75.backdrop-blur-sm .max-w-md {
+    max-height: 80vh;
+    overflow-y: auto;
+    padding: 1rem !important;
+  }
+}
+
+/* Ensure buttons don't get cut off in landscape */
+@media (max-height: 400px) {
+  .absolute.right-3.bottom-3 {
+    bottom: 1rem !important;
+    right: 1rem !important;
+  }
+  
+  .mt-2.py-2 {
+    margin-top: 0.5rem !important;
+    padding-top: 0.25rem !important;
+    padding-bottom: 0.25rem !important;
+  }
+}
+
+/* Custom tooltip styles for results map */
+.custom-tooltip {
+  background-color: rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  padding: 3px 6px;
+  font-size: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  white-space: nowrap;
+}
+
+.custom-tooltip:before {
+  border-top-color: rgba(0, 0, 0, 0.7);
+}
+
+/* Make sure the tooltips are visible */
+.leaflet-tooltip-top:before, 
+.leaflet-tooltip-bottom:before, 
+.leaflet-tooltip-left:before, 
+.leaflet-tooltip-right:before {
+  position: absolute;
+  pointer-events: none;
+  border: 6px solid transparent;
+  background: transparent;
+  content: "";
+}
