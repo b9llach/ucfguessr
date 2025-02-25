@@ -295,31 +295,74 @@ export default function Home() {
     setTimeLeft(300);
     setShowResults(false);
     setGameOver(false);
-    // Initialize empty round results array
-    setRoundResults([]); // Important! This prevents the "Cannot read properties of undefined" error
+    setRoundResults([]);
     
-    // Pick a new random location if locations are available
-    if (locations.length > 0) {
-      const randomIndex = Math.floor(Math.random() * locations.length);
-      setCurrentLocation(locations[randomIndex]);
-    }
+    // Important: Generate a new seed if you want a different game each time
+    const newSeed = Math.floor(Math.random() * 1000000);
+    setSeed(newSeed);
     
-    // Restart timer
+    // Update URL with the new seed (without refreshing page)
+    const newUrl = new URL(window.location.href);
+    newUrl.searchParams.set('seed', newSeed.toString());
+    window.history.pushState({ path: newUrl.toString() }, '', newUrl.toString());
+    
+    // We'll let the useEffect that watches seed changes handle creating new game locations
+    // This ensures proper flow of updating gameLocations and then currentLocation
+    
+    // Stop any existing timers
     if (timerRef.current) {
       clearInterval(timerRef.current);
     }
+  }, []);
+
+  // Make sure this useEffect runs when seed changes after restart
+  useEffect(() => {
+    if (seed !== null && locations.length > 0) {
+      // Get 5 deterministic locations for this game based on the seed
+      const shuffled = getShuffledLocations(locations, seed);
+      setGameLocations(shuffled.slice(0, 5)); // Take first 5 for the game
+    }
+  }, [seed, locations]);
+
+  // Make sure this useEffect properly sets the current location for round 1
+  useEffect(() => {
+    if (gameLocations.length === 0) return;
     
-    timerRef.current = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev <= 1) {
-          if (timerRef.current) clearInterval(timerRef.current);
-          makeGuess();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-  }, [locations, makeGuess]);
+    if (round <= 5) {
+      // Reset for new round
+      setGamePhase("exploring");
+      setSelectedPosition(null);
+      setRoundScore(0);
+      setShowResults(false);
+      setTimeLeft(300);
+      
+      // Get deterministic location for this round
+      setCurrentLocation(gameLocations[round - 1]);
+      console.log("Setting current location:", gameLocations[round - 1]); // Debug log
+      
+      // Start timer
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+      
+      timerRef.current = setInterval(() => {
+        setTimeLeft(prev => {
+          if (prev <= 1) {
+            if (timerRef.current) clearInterval(timerRef.current);
+            makeGuess();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } else {
+      setGameOver(true);
+    }
+    
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [round, gameLocations.length]);
 
   const handleMapClick = useCallback((position: [number, number]) => {
     if (!showResults) {
