@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import mapService from '@/app/services/mapService';
+import mapService from '../services/mapService';
 
 interface MapComponentProps {
   center: [number, number];
