@@ -4,8 +4,6 @@ import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import Image from "next/image";
 import dynamic from 'next/dynamic';
 import 'leaflet/dist/leaflet.css';
-import ResultsMap from './components/ResultsMap';
-
 
 // Dynamically import all client-side components
 const MapComponent = dynamic(() => import('./components/MapComponent'), { 
@@ -17,6 +15,12 @@ const PanoramaViewer = dynamic(() => import('./components/PanoramaViewer'), {
   ssr: false,
   loading: () => <div className="h-full w-full bg-gray-800 flex items-center justify-center">Loading panorama...</div>
 });
+
+// Dynamically import ResultsMap with no SSR
+const ResultsMap = dynamic(
+  () => import('./components/ResultsMap'),
+  { ssr: false }
+);
 
 interface Location {
   id: number;
