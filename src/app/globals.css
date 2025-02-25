@@ -37,3 +37,5 @@ body {
 .animate-scaleIn {
   animation: scaleIn 0.4s ease-out forwards;
 }
+
+@import 'https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css';

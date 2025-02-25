@@ -1,73 +1,66 @@
 "use client";
 
-import { useEffect, useRef, useState } from 'react';
-import dynamic from 'next/dynamic';
+import { useEffect, useRef } from 'react';
+import Script from 'next/script';
 
-// Dynamically import Pannellum on client-side only
-const Pannellum = dynamic(() => import('pannellum-react').then(mod => mod.Pannellum), {
-  ssr: false,
-  loading: () => (
-    <div className="h-full w-full flex items-center justify-center bg-gray-900">
-      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
-    </div>
-  )
-});
+// Add TypeScript declaration for pannellum on window object
+declare global {
+  interface Window {
+    pannellum: {
+      viewer: (id: string, config: any) => any;
+    };
+  }
+}
+
+// Add the CSS import to your global CSS or add it to layout.tsx
+// Add this line to your globals.css:
+// @import 'https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css';
 
 interface PanoramaViewerProps {
   imageSrc: string;
 }
 
 export default function PanoramaViewer({ imageSrc }: PanoramaViewerProps) {
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [hasError, setHasError] = useState(false);
-  
-  // Handle image loading
+  const viewerRef = useRef<HTMLDivElement>(null);
+  const viewerInstance = useRef<any>(null);
+  const scriptLoaded = useRef(false);
+
   useEffect(() => {
-    setIsLoaded(false);
-    setHasError(false);
+    // Wait for both the div to exist and the script to be loaded
+    if (!viewerRef.current || !window.pannellum || scriptLoaded.current === false) return;
     
-    const img = new Image();
-    img.onload = () => setIsLoaded(true);
-    img.onerror = () => {
-      console.error(`Failed to load panorama: ${imageSrc}`);
-      setHasError(true);
+    // Initialize the viewer
+    viewerInstance.current = window.pannellum.viewer(viewerRef.current.id, {
+      type: "equirectangular",
+      panorama: imageSrc,
+      autoLoad: true,
+      showZoomCtrl: false,
+      showFullscreenCtrl: false,
+      hfov: 100,
+      pitch: 0,
+      yaw: 0
+    });
+    
+    // Clean up when component unmounts or image changes
+    return () => {
+      if (viewerInstance.current) {
+        viewerInstance.current.destroy();
+      }
     };
-    img.src = imageSrc;
-  }, [imageSrc]);
-
-  if (hasError) {
-    return (
-      <div className="h-full w-full flex items-center justify-center bg-gray-900">
-        <div className="text-white text-center">
-          <p className="text-xl mb-2">Failed to load panorama</p>
-          <p className="text-sm opacity-70">Check console for details</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isLoaded) {
-    return (
-      <div className="h-full w-full flex items-center justify-center bg-gray-900">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-white"></div>
-      </div>
-    );
-  }
+  }, [imageSrc, scriptLoaded.current]);
 
   return (
-    <div className="h-full w-full">
-      <Pannellum
-        width="100%"
-        height="100%"
-        image={imageSrc}
-        pitch={0}
-        yaw={0}
-        hfov={100}
-        autoLoad
-        showZoomCtrl={false}
-        showFullscreenCtrl={false}
-        mouseZoom={true}
+    <>
+      <Script 
+        src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"
+        strategy="afterInteractive"
+        onLoad={() => { scriptLoaded.current = true; }}
       />
-    </div>
+      <div 
+        id="panorama-viewer"
+        ref={viewerRef} 
+        className="h-full w-full"
+      />
+    </>
   );
 }

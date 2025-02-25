@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     icon: "https://i.pinimg.com/originals/56/fc/a0/56fca09d8eb0a9b020d8c42212008e7c.png",
   },
   openGraph: {
-    images: "/images/ucf-logo.png",
+    images: "https://ntk8n4sii7.ufs.sh/f/cLWmiQyDE9Nl6zz9neBZSiEhKYJapTOzHQZWcv83BUrX2Ll9",
   },
 };
 
