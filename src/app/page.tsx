@@ -232,7 +232,7 @@ export default function Home() {
     const distance = R * c; // Distance in miles
     
     // Adjusted scoring formula for campus-sized area - less harsh drop-off
-    const score = Math.floor(5000 * Math.exp(-distance / 0.5));
+    const score = Math.floor(5000 * Math.exp(-distance / 0.9));
     
     // Store the distance in meters for display purposes
     const distanceInMeters = distance * 1609.34;
@@ -286,11 +286,40 @@ export default function Home() {
   }, [round]);
 
   const restartGame = useCallback(() => {
-    setScore(0);
+    // Reset all game state
     setRound(1);
+    setScore(0);
+    setGamePhase("exploring");
+    setSelectedPosition(null);
+    setRoundScore(0);
+    setTimeLeft(300);
+    setShowResults(false);
     setGameOver(false);
-    setRoundResults([]);
-  }, []);
+    // Initialize empty round results array
+    setRoundResults([]); // Important! This prevents the "Cannot read properties of undefined" error
+    
+    // Pick a new random location if locations are available
+    if (locations.length > 0) {
+      const randomIndex = Math.floor(Math.random() * locations.length);
+      setCurrentLocation(locations[randomIndex]);
+    }
+    
+    // Restart timer
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
+    
+    timerRef.current = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1) {
+          if (timerRef.current) clearInterval(timerRef.current);
+          makeGuess();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  }, [locations, makeGuess]);
 
   const handleMapClick = useCallback((position: [number, number]) => {
     if (!showResults) {
@@ -306,12 +335,15 @@ export default function Home() {
   }, []);
 
   // Format distance in meters or kilometers
-  const formatDistance = useCallback((meters: number) => {
-    if (meters < 1000) {
-      return `${Math.round(meters)} m`;
+  const formatDistance = (distance: number | undefined) => {
+    if (distance === undefined) return "Unknown";
+    
+    if (distance < 1000) {
+      return `${Math.round(distance)} meters`;
+    } else {
+      return `${(distance / 1000).toFixed(2)} kilometers`;
     }
-    return `${(meters / 1000).toFixed(2)} km`;
-  }, []);
+  };
 
   // Add this useEffect
   useEffect(() => {
